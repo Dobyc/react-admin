@@ -1,27 +1,44 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { AppThunk } from ".";
+import { setInfo } from "./user";
+import axios from "@/utils/axios";
+import localforage from "localforage";
+
+const initialState: AppState = {
+  siteName: "",
+  apps: [],
+  menus: [],
+};
 
 export const slice = createSlice({
   name: "app",
-  initialState: {
-    value: 0,
-  },
+  initialState,
   reducers: {
-    increment: (state) => {
-      // Redux Toolkit 允许我们在 reducers 写 "可变" 逻辑。它
-      // 并不是真正的改变状态值，因为它使用了 Immer 库
-      // 可以检测到“草稿状态“ 的变化并且基于这些变化生产全新的
-      // 不可变的状态
-      state.value += 1;
+    setSiteName: (state, action) => {
+      state.siteName = action.payload;
     },
-    decrement: (state) => {
-      state.value -= 1;
+    setApps: (state, action) => {
+      state.apps = action.payload;
     },
-    incrementByAmount: (state, action) => {
-      state.value += action.payload;
+    setMenus: (state, action) => {
+      state.menus = action.payload || [];
+      localforage.setItem(
+        "auths",
+        state.menus.map((item: { code: string }) => item.code)
+      );
     },
   },
 });
-// 每个 case reducer 函数会生成对应的 Action creators
-export const { increment, decrement, incrementByAmount } = slice.actions;
+
+export const getAuths = (): AppThunk => (dispatch, getState) => {
+  axios.get("/getAuths", { requestOnly: true }).then((res) => {
+    if (res.success) {
+      dispatch(setApps(res.data.apps));
+      dispatch(setMenus(res.data.menus));
+    }
+  });
+};
+
+export const { setSiteName, setMenus, setApps } = slice.actions;
 
 export default slice.reducer;

@@ -1,6 +1,5 @@
 import React from "react";
-import { usePageSelector } from "@/utils/hook";
-import type { Props } from "@/types";
+import { usePageSelector } from "@/hooks";
 
 function index(props: Props) {
   const data = usePageSelector(props);

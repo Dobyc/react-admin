@@ -1,17 +1,44 @@
-import React from "react";
+import React, { Suspense, useEffect, useState, lazy, memo } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider } from "react-router-dom";
-import router from "./router";
 import { Provider } from "react-redux";
-import store from "./store";
+import { BrowserRouter, RouterProvider, createBrowserRouter } from "react-router-dom";
+import store from "@/store";
 
-import "./index.css";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+
 import "tdesign-react/es/style/index.css";
+import "./index.less";
+import router from "./router";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <RouterProvider router={router} />
-    </Provider>
-  </React.StrictMode>
-);
+const mode = import.meta.env.MODE;
+
+const Loading = memo(() => {
+  useEffect(() => {
+    NProgress.start();
+
+    return () => {
+      NProgress.done();
+    };
+  });
+
+  return <></>;
+});
+
+(async () => {
+  // 开发环境加载mock
+  if (mode === "development") {
+    const { default: initMocks } = await import("@/mock");
+    initMocks();
+  }
+
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <Suspense fallback={<Loading />}>
+          <RouterProvider router={router} />
+        </Suspense>
+      </Provider>
+    </React.StrictMode>
+  );
+})();

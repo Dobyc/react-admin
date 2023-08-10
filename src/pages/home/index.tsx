@@ -1,17 +1,26 @@
-import React from "react";
+import React, { useCallback } from "react";
 import img from "@/assets/33.png";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { type RootState } from "@/store";
-import type { Props } from "@/types";
-import { usePageSelector } from "@/utils/hook";
+import { useAppDispatch, usePageSelector } from "@/hooks";
+import { Button } from "tdesign-react";
+// import { login } from "@/store/user";
+import dayjs from "dayjs";
 
 function Page(props: Props) {
   const app = useSelector((state: RootState) => state.app);
   const data = usePageSelector(props);
+  const dispatch = useAppDispatch();
+
+  const handleLogin = useCallback(() => {
+    console.log("login");
+    // dispatch(login({ userName: "root", password: "123456" }));
+  }, []);
 
   return (
     <div className="App dark:bg-black">
-      home
+      <h2>Home</h2>
+      <Button onClick={handleLogin}>login</Button>
       {/* <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
         <div className="md:flex">
           <div className="md:flex-shrink-0">

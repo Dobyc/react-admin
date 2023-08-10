@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Menu } from "tdesign-react";
 import {
   DashboardIcon,
@@ -12,22 +12,26 @@ import {
   Edit1Icon,
 } from "tdesign-icons-react";
 import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "@/hooks";
 
 const { MenuItem } = Menu;
 
-const routes = [
-  { code: "home", name: "home", url: "home" },
-  { code: "aa/bb", name: "aa/bb", url: "aa/bb" },
-  { code: "aa/bb/cc", name: "aa/bb/cc", url: "aa/bb/cc" },
-];
-
 function Component() {
   const navigate = useNavigate();
+  const menus = useAppSelector((state) => state.app.menus);
+
+  console.log("menus", menus);
+
+  const handleClickMenu = useCallback((menu: Menu) => {
+    console.log("menu", menu);
+    navigate(menu.path);
+  }, []);
+
   return (
     <Menu theme="light" value="dashboard" style={{ marginRight: 50, height: 550 }}>
-      {routes.map((item) => (
-        <MenuItem key={item.code} value={item.code} icon={<DashboardIcon />} onClick={() => navigate(item.url)}>
-          {item.name}
+      {menus.map((item) => (
+        <MenuItem key={item.code} value={item.code} icon={<DashboardIcon />} onClick={() => handleClickMenu(item)}>
+          {item.title}
         </MenuItem>
       ))}
       {/* <MenuItem value="dashboard" icon={<DashboardIcon />}>

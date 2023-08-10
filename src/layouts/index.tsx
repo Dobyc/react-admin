@@ -1,27 +1,23 @@
-import React, { Suspense, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Layout } from "tdesign-react";
 import Header from "./Header";
 import Menu from "./Menu";
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
 import styles from "./layout.module.less";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { getAuths } from "@/store/app";
 
 const { Content, Footer, Aside } = Layout;
 
-const Loading = React.memo(() => {
-  useEffect(() => {
-    NProgress.start();
-
-    return () => {
-      NProgress.done();
-    };
-  });
-
-  return <></>;
-});
-
 function Page() {
+  const app = useAppSelector((state) => state.app);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    console.log("effect", app);
+    dispatch(getAuths());
+  }, []);
+
   return (
     <div className={styles.container}>
       <Layout>
@@ -32,11 +28,9 @@ function Page() {
           </Aside>
           <Layout>
             <Content>
-              <Suspense fallback={<Loading />}>
-                <Outlet />
-              </Suspense>
+              <Outlet />
             </Content>
-            <Footer>Copyright @ 2019-2020 Tencent. All Rights Reserved</Footer>
+            <Footer>Copyright. All Rights Reserved</Footer>
           </Layout>
         </Layout>
       </Layout>

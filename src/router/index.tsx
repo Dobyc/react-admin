@@ -1,54 +1,76 @@
 import { lazy } from "react";
-import { createBrowserRouter } from "react-router-dom";
-import Layout from "../layouts";
+import { createBrowserRouter, redirect } from "react-router-dom";
+import Layout from "@/layouts";
+import ErrorPage from "@/pages/error";
+import localforage from "localforage";
+// import checkAuth from "./checkAuth";
 
-const exceptList: string[] = ["404", "login"];
+const exceptList: string[] = ["error", "login"];
 const modules = import.meta.glob("../pages/**/index.tsx");
 
-const lazyLoad = (route: string, page: string) => {
-  // @ts-ignore
+export const lazyLoad = (route: string, page: string) => {
+  // @ts-ignorez
   const Module = lazy(modules[page]);
   return <Module route={route} />;
 };
 
-let isFirst = true;
+let isFirst: Boolean = true;
 
-const routes = [
+interface Router {
+  path: string;
+  element: JSX.Element;
+  errorElement?: JSX.Element;
+  children?: Array<Router>;
+  [key: string]: any;
+}
+
+const routes: Array<Router> = [
   {
     path: "/",
     element: <Layout />,
-    errorElement: lazyLoad("404", "../pages/404/index.tsx"),
-    // loader: async ({ params }) => {
-    //   console.log("params", params);
-    //   return {};
-    //   // return fetch(`/api/teams/${params.teamId}.json`);
-    // },
-    children: Object.keys(modules)
-      .map((page) => {
-        const reg = /.*pages\/(.*?)\/index\.[jt]sx?$/;
-        const path = page.match(reg)?.[1];
-        if (path && !exceptList.includes(path)) {
-          const index = isFirst;
-          isFirst = false;
-          const route = path.replace(/\//g, "-");
-          return {
-            index,
-            path,
-            element: lazyLoad(route, page),
-          };
-        } else {
-          return {};
-        }
-      })
-      .filter((item) => JSON.stringify(item) !== "{}"),
+    errorElement: <ErrorPage />,
+    loader: async () => {
+      const token = localforage.getItem("token");
+      if (!token) {
+        return redirect("/login");
+      }
+      return "";
+    },
+    children: [],
   },
   {
     path: "/login",
     element: lazyLoad("login", "../pages/login/index.tsx"),
   },
+  {
+    path: "/error",
+    element: <ErrorPage />,
+  },
 ];
 
+Object.keys(modules).forEach((page) => {
+  const reg = /.*pages\/(.*?)\/index\.[jt]sx?$/;
+  const path: string = page.match(reg)?.[1] || "";
+  if (path && !exceptList.includes(path)) {
+    const index = isFirst;
+    isFirst = false;
+    const route = path.replace(/\//g, "-");
+    routes[0].children?.push({
+      index,
+      path,
+      element: lazyLoad(route, page),
+      loader: async () => {
+        // 权鉴
+        const auths: Array<any> = (await localforage.getItem("auths")) || [];
+        if (!auths.includes(route)) {
+          return redirect("/error");
+        }
+        return "";
+      },
+    });
+  }
+});
+
 const router = createBrowserRouter(routes);
-console.log("routes", routes[0].children);
 
 export default router;

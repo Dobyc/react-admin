@@ -49,10 +49,10 @@ declare module "tvision-color";
 declare interface ImportMeta {
   env: {
     MODE: "development" | "test" | "release" | "mock" | "site";
+    VITE_BASE_URL: string;
   };
 }
 
-interface OutletProps {
-  context?: unknown;
+declare interface Props {
+  route: string;
 }
-declare function Outlet(props: OutletProps): React.ReactElement | null;
